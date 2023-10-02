@@ -1,0 +1,59 @@
+{% extends 'base.html '%}
+{% load crispy_forms_tags %}
+    <title>{% block title %} Book detail page {% endblock title %}</title>
+{% block content %}
+ <div class="row mb-4">
+            <div class="col-2">
+                <img src="{{ book.cover_picture.url}}" class="cover_pic">
+            </div>
+            <div class="col-6 ms-4">
+                <span class="fst-italic">
+                    Authored by
+                     {% for book_author in book.book_author_set.all %}
+                      {% if forloop.last %}
+                      {{ book_author.author.fullname }}
+                      {% else %}
+                      {{ book_author.author.fullname }},
+                      {%endif%}
+                     {%endfor%}
+
+                </span>
+                <h3> {{book.title}}</h3>
+                <p>
+                    {{book.description }}
+                </p>
+            </div>
+ </div>
+ <div class="row mb-4">
+     <div class="col-7">
+         <form method="post" action="{% url "books:reviews" book.id %}">
+             {% csrf_token %}
+             {{ review_form | crispy}}
+             <button class="btn btn-success">Add review</button>
+         </form>
+     </div>
+ </div>
+
+{% if book.bookreview_set.exists %}
+ <h4>Reviews</h4> <hr>
+
+{% for review in book.bookreview_set.all %}
+    <div class="row mb-3">
+        <div class="col-1 me-2">
+            <img class="small_profile_pic" src="{{ review.user.profile_picture.url }}">
+        </div>
+        <div class="col-7 ms-1">
+             <b>{{ review.user.username }}</b> rated it {{ review.stars_given }} stars <span class="fw-lighter"> {{ review.created_ad }}</span>
+             {% if review.user == request.user %}
+             <a href="{% url "books:review_edit" book.id review.id %}"><i class="bi bi-pen"></i></a>
+             <a href="{% url "books:review_delete_confirm" book.id review.id %}"><i class="bi bi-trash"></i></a>
+             {% endif %}
+             <p class="mt-1  font-monospace">{{ review.comment }}</p>
+        </div>
+    </div>
+{% endfor %}
+{% endif%}
+
+
+
+{% endblock %}
